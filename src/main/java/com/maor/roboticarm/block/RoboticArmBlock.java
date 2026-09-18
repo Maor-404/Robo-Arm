@@ -34,6 +34,10 @@ public class RoboticArmBlock extends BaseEntityBlock {
     }
 
     @Override public RenderShape getRenderShape(BlockState state) { return RenderShape.MODEL; }
+    @Override public net.minecraft.world.phys.shapes.VoxelShape getShape(BlockState state, net.minecraft.world.level.BlockGetter level, BlockPos pos,
+                                                                          net.minecraft.world.phys.shapes.CollisionContext context) {
+        return Block.box(0, 0, 0, 16, 14, 16);
+    }
     @Override public BlockEntity newBlockEntity(BlockPos pos, BlockState state) { return new RoboticArmBlockEntity(pos, state); }
     @Override public BlockState getStateForPlacement(BlockPlaceContext context) {
         return defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());

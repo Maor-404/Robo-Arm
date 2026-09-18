@@ -24,14 +24,14 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
-import terrablender.api.Regions;
-import com.maor.roboticarm.worldgen.DigitalHavenRegion;
 import net.neoforged.neoforge.event.entity.RegisterSpawnPlacementsEvent;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import net.neoforged.neoforge.registries.DeferredHolder;
+import terrablender.api.Regions;
+import com.maor.roboticarm.worldgen.DigitalHavenRegion;
 
 @Mod(RoboticArm.MODID)
 public final class RoboticArm {
@@ -112,7 +112,6 @@ public final class RoboticArm {
         modBus.addListener(RoboticArm::registerSpawnPlacements);
         modBus.addListener(this::commonSetup);
         modBus.addListener(ArmControlPayload::register);
-        NeoForge.EVENT_BUS.register(this);
     }
     private void commonSetup(FMLCommonSetupEvent event) {
         event.enqueueWork(() -> Regions.register(new DigitalHavenRegion()));

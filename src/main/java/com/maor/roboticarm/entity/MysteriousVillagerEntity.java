@@ -47,7 +47,9 @@ public class MysteriousVillagerEntity extends PathfinderMob {
             player.getInventory().placeItemBackInInventory(new ItemStack(RoboticArm.ROBOTIC_ARM_BLUEPRINT.get()));
             player.sendSystemMessage(Component.literal("Mission complete! You received the Robotic Arm blueprint."));
         } else {
-            player.sendSystemMessage(Component.literal(stage == 0 ? "Bring me a power core." : stage == 1 ? "The assembly materials, please." : "Bring me a processing core."));
+            player.sendSystemMessage(Component.literal(stage == 0
+                    ? "Recover a Power Core from the Digital Haven ruins."
+                    : stage == 1 ? "The assembly materials, please." : "Bring me a processing core."));
         }
         return InteractionResult.CONSUME;
     }

@@ -10,9 +10,8 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.Container;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.neoforged.neoforge.items.ItemStackHandler;
+import net.neoforged.neoforge.items.SlotItemHandler;
 
 public class RoboticArmMenu extends AbstractContainerMenu {
     private final RoboticArmBlockEntity arm;
@@ -22,27 +21,20 @@ public class RoboticArmMenu extends AbstractContainerMenu {
         this.arm = arm;
         this.data = data;
         addDataSlots(data);
-        for (int i = 0; i < 21; i++) addSlot(new HandlerSlot(arm.getInventory(), i, slotX(i), slotY(i)));
+        addSlot(new LimitedSlot(arm.getInventory(), 0, 8, 66, 1, true));
+        addSlot(new LimitedSlot(arm.getInventory(), 1, 8, 88, 64, true));
+        for (int i = 2; i <= 10; i++) addSlot(new LimitedSlot(arm.getInventory(), i,
+                44 + ((i - 2) % 3) * 18, 66 + ((i - 2) / 3) * 18, 64, true));
+        addSlot(new LimitedSlot(arm.getInventory(), 11, 134, 84, 64, false));
+        for (int i = 12; i < 21; i++) addSlot(new LimitedSlot(arm.getInventory(), i, 8 + (i - 12) * 18, 122, 64, true));
         for (int row = 0; row < 3; row++) for (int col = 0; col < 9; col++)
-            addSlot(new Slot(player, col + row * 9 + 9, 8 + col * 18, 140 + row * 18));
-        for (int col = 0; col < 9; col++) addSlot(new Slot(player, col, 8 + col * 18, 198));
+            addSlot(new Slot(player, col + row * 9 + 9, 8 + col * 18, 160 + row * 18));
+        for (int col = 0; col < 9; col++) addSlot(new Slot(player, col, 8 + col * 18, 214));
     }
     public static RoboticArmMenu fromBuffer(int id, Inventory inventory, FriendlyByteBuf buf) {
         BlockPos pos = buf.readBlockPos();
         BlockEntity be = inventory.player.level().getBlockEntity(pos);
         return new RoboticArmMenu(id, inventory, (RoboticArmBlockEntity) be, ((RoboticArmBlockEntity) be).data());
-    }
-    private static int slotX(int slot) {
-        if (slot == 0) return 26;
-        if (slot == 1) return 62;
-        if (slot >= 2 && slot <= 10) return 44 + ((slot - 2) % 3) * 18;
-        if (slot == 11) return 116;
-        return 26 + ((slot - 12) % 3) * 18;
-    }
-    private static int slotY(int slot) {
-        if (slot == 0 || slot == 1 || slot == 11) return 26;
-        if (slot >= 2 && slot <= 10) return 44 + ((slot - 2) / 3) * 18;
-        return 80 + ((slot - 12) / 3) * 18;
     }
     public int energy() { return data.get(0); }
     public int maxEnergy() { return data.get(1); }
@@ -62,24 +54,16 @@ public class RoboticArmMenu extends AbstractContainerMenu {
         if (stack.isEmpty()) source.set(ItemStack.EMPTY); else source.setChanged();
         return copy;
     }
-    private static class HandlerSlot extends Slot {
-        private final ItemStackHandler handler;
-        private final int handlerSlot;
-        HandlerSlot(ItemStackHandler handler, int slot, int x, int y) {
-            super(new EmptyContainer(), slot, x, y); this.handler = handler; this.handlerSlot = slot;
+    private static class LimitedSlot extends SlotItemHandler {
+        private final int maxStack;
+        private final boolean mayPlace;
+        LimitedSlot(net.neoforged.neoforge.items.IItemHandler handler, int index, int x, int y, int maxStack, boolean mayPlace) {
+            super(handler, index, x, y);
+            this.maxStack = maxStack;
+            this.mayPlace = mayPlace;
         }
-        @Override public ItemStack getItem() { return handler.getStackInSlot(handlerSlot); }
-        @Override public void set(ItemStack stack) { handler.setStackInSlot(handlerSlot, stack); setChanged(); }
-        @Override public void setChanged() { handler.setStackInSlot(handlerSlot, getItem()); }
-        @Override public boolean hasItem() { return !getItem().isEmpty(); }
-        @Override public ItemStack remove(int amount) { return handler.extractItem(handlerSlot, amount, false); }
-        @Override public boolean mayPlace(ItemStack stack) { return handlerSlot != 11; }
-        @Override public int getMaxStackSize() { return handlerSlot == 0 || handlerSlot == 11 ? 1 : 64; }
-    }
-    private static class EmptyContainer implements Container {
-        public int getContainerSize(){return 0;} public boolean isEmpty(){return true;} public ItemStack getItem(int i){return ItemStack.EMPTY;}
-        public ItemStack removeItem(int i,int c){return ItemStack.EMPTY;} public ItemStack removeItemNoUpdate(int i){return ItemStack.EMPTY;}
-        public void setItem(int i,ItemStack s){} public void setChanged(){} public boolean stillValid(Player p){return true;}
-        public void clearContent(){}
+        @Override public boolean mayPlace(ItemStack stack) { return mayPlace && super.mayPlace(stack); }
+        @Override public int getMaxStackSize() { return maxStack; }
+        @Override public int getMaxStackSize(ItemStack stack) { return maxStack; }
     }
 }

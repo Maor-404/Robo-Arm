@@ -28,6 +28,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.energy.EnergyStorage;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.items.wrapper.RangedWrapper;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -36,10 +37,10 @@ public class RoboticArmBlockEntity extends BlockEntity implements MenuProvider {
     public enum Task { MINING, CRAFTING, TRANSFER }
     public enum Status { IDLE, WORKING, NO_ENERGY, NO_TARGET, OUTPUT_FULL, NO_TOOL }
     private final EnergyStorage energy = new EnergyStorage(10000, 1000, 1000);
-    private final ItemStackHandler inventory = new ItemStackHandler(21);
-    private final ItemStackHandler storage = new ItemStackHandler(9) {
+    private final ItemStackHandler inventory = new ItemStackHandler(21) {
         @Override protected void onContentsChanged(int slot) { RoboticArmBlockEntity.this.setChanged(); }
     };
+    private final IItemHandler storage = new RangedWrapper(inventory, 12, 21);
     private Task task = Task.MINING;
     private Status status = Status.IDLE;
     private boolean running;
@@ -128,14 +129,17 @@ public class RoboticArmBlockEntity extends BlockEntity implements MenuProvider {
         var remaining = level.getRecipeManager().getRemainingItemsFor(RecipeType.CRAFTING, input, level);
         for (int i = 0; i < 9; i++) {
             inventory.extractItem(i + 2, 1, false);
-            if (!remaining.get(i).isEmpty()) inventory.setStackInSlot(i + 2, remaining.get(i));
+            if (!remaining.get(i).isEmpty()) {
+                if (inventory.getStackInSlot(i + 2).isEmpty()) inventory.setStackInSlot(i + 2, remaining.get(i));
+                else insertStorage(remaining.get(i));
+            }
         }
         for (int i = 2; i <= 10; i++) {
             if (!inventory.getStackInSlot(i).isEmpty()) continue;
-            for (int s = 0; s < storage.getSlots(); s++) {
-                ItemStack stored = storage.getStackInSlot(s);
+            for (int s = 12; s < 21; s++) {
+                ItemStack stored = inventory.getStackInSlot(s);
                 if (!stored.isEmpty() && (grid.get(i - 2).isEmpty() || ItemStack.isSameItemSameComponents(stored, grid.get(i - 2)))) {
-                    inventory.setStackInSlot(i, storage.extractItem(s, 1, false)); break;
+                    inventory.setStackInSlot(i, inventory.extractItem(s, 1, false)); break;
                 }
             }
         }
@@ -154,7 +158,7 @@ public class RoboticArmBlockEntity extends BlockEntity implements MenuProvider {
         for (int slot = 0; slot < from.getSlots(); slot++) {
             ItemStack sample = from.extractItem(slot, 8, true);
             if (sample.isEmpty()) continue;
-            ItemStack remainder = to.insertItem(0, sample, false);
+            ItemStack remainder = net.neoforged.neoforge.items.ItemHandlerHelper.insertItem(to, sample, false);
             int moved = sample.getCount() - remainder.getCount();
             if (moved > 0) {
                 from.extractItem(slot, moved, false);
@@ -169,7 +173,7 @@ public class RoboticArmBlockEntity extends BlockEntity implements MenuProvider {
 
     private ItemStack insertStorage(ItemStack stack) {
         ItemStack remaining = stack.copy();
-        for (int i = 0; i < storage.getSlots() && !remaining.isEmpty(); i++) remaining = storage.insertItem(i, remaining, false);
+        for (int i = 12; i < 21 && !remaining.isEmpty(); i++) remaining = inventory.insertItem(i, remaining, false);
         return remaining;
     }
 
@@ -192,7 +196,6 @@ public class RoboticArmBlockEntity extends BlockEntity implements MenuProvider {
         tag.putInt("Progress", progress);
         tag.putString("Target", targetName);
         tag.put("Inventory", inventory.serializeNBT(registries));
-        tag.put("Storage", storage.serializeNBT(registries));
     }
     @Override protected void loadAdditional(CompoundTag tag, net.minecraft.core.HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
@@ -203,7 +206,6 @@ public class RoboticArmBlockEntity extends BlockEntity implements MenuProvider {
         progress = tag.getInt("Progress");
         targetName = tag.getString("Target");
         inventory.deserializeNBT(registries, tag.getCompound("Inventory"));
-        storage.deserializeNBT(registries, tag.getCompound("Storage"));
     }
     @Override public CompoundTag getUpdateTag(net.minecraft.core.HolderLookup.Provider registries) {
         CompoundTag tag = super.getUpdateTag(registries);

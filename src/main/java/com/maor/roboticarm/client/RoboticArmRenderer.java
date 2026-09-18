@@ -7,18 +7,24 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.renderer.block.ModelBlockRenderer;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
-import net.minecraft.client.renderer.LevelRenderer;
-import net.minecraft.core.Direction;
+import com.mojang.math.Axis;
+import net.minecraft.resources.ResourceLocation;
 
 public class RoboticArmRenderer implements BlockEntityRenderer<RoboticArmBlockEntity> {
-    public RoboticArmRenderer(BlockEntityRendererProvider.Context context) {}
+    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath("roboticarm", "textures/entity/robotic_arm.png");
+    private final RoboticArmModel model;
+    public RoboticArmRenderer(BlockEntityRendererProvider.Context context) {
+        model = new RoboticArmModel(context.bakeLayer(RoboticArmModel.LAYER));
+    }
     @Override public void render(RoboticArmBlockEntity be, float partial, PoseStack pose, MultiBufferSource buffers, int light, int overlay) {
-        if (be.isRunning() && be.getStatus() == RoboticArmBlockEntity.Status.WORKING) {
-            float swing = (float)Math.sin((be.getLevel().getGameTime() + partial) * .15) * .2f;
-            pose.translate(0, swing, 0);
-        }
+        pose.pushPose();
+        pose.translate(.5, 1.5, .5);
+        pose.scale(1, -1, -1);
+        pose.mulPose(Axis.YP.rotationDegrees(-be.getBlockState().getValue(com.maor.roboticarm.block.RoboticArmBlock.FACING).toYRot()));
+        boolean working = be.isRunning() && be.getStatus() == RoboticArmBlockEntity.Status.WORKING;
+        float time = be.getLevel().getGameTime() + partial;
+        model.animate(time, working);
+        model.renderToBuffer(pose, buffers.getBuffer(RenderType.entityCutoutNoCull(TEXTURE)), light, OverlayTexture.NO_OVERLAY);
+        pose.popPose();
     }
 }

@@ -8,7 +8,7 @@ import net.minecraft.client.renderer.entity.MobRenderer;
 import net.minecraft.resources.ResourceLocation;
 
 public class MysteriousVillagerRenderer extends MobRenderer<MysteriousVillagerEntity, VillagerModel<MysteriousVillagerEntity>> {
-    private static final ResourceLocation TEXTURE = ResourceLocation.withDefaultNamespace("textures/entity/villager/villager.png");
+    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath("roboticarm", "textures/entity/mysterious_villager.png");
     public MysteriousVillagerRenderer(EntityRendererProvider.Context context) {
         super(context, new VillagerModel<>(context.bakeLayer(ModelLayers.VILLAGER)), .5f);
     }
