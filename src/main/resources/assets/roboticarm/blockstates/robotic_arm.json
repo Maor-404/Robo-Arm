@@ -1,0 +1,1 @@
+{"variants":{"facing=north":{"model":"roboticarm:block/robotic_arm"},"facing=east":{"model":"roboticarm:block/robotic_arm","y":90},"facing=south":{"model":"roboticarm:block/robotic_arm","y":180},"facing=west":{"model":"roboticarm:block/robotic_arm","y":270}}}

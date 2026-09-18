@@ -1,0 +1,1 @@
+{"parent":"minecraft:block/cube","textures":{"particle":"roboticarm:block/robotic_arm_base","down":"roboticarm:block/robotic_arm_base","up":"roboticarm:block/robotic_arm_base","north":"roboticarm:block/robotic_arm_base","south":"roboticarm:block/robotic_arm_base","east":"roboticarm:block/robotic_arm_base","west":"roboticarm:block/robotic_arm_base"}}

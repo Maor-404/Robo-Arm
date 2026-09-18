@@ -1,0 +1,42 @@
+plugins {
+    id 'net.neoforged.moddev' version '2.0.147'
+}
+
+version = mod_version
+group = mod_group_id
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+
+repositories {
+    maven { url = uri("https://maven.minecraftforge.net") }
+    mavenCentral()
+}
+
+neoForge {
+    version = neo_version
+    runs {
+        client { client() }
+        server { server() }
+        data { data() }
+    }
+    mods {
+        roboticarm {
+            sourceSet sourceSets.main
+        }
+    }
+}
+
+dependencies {
+    implementation "com.github.glitchfiend:TerraBlender-neoforge:1.21.1-4.1.0.2"
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+tasks.withType(ProcessResources).configureEach {
+    filesMatching('META-INF/neoforge.mods.toml') {
+        expand minecraft_version: minecraft_version, neo_version: neo_version, mod_id: mod_id,
+                mod_name: mod_name, mod_version: mod_version
+    }
+}

@@ -1,0 +1,1 @@
+{"parent":"minecraft:recipes/root","criteria":{"has_blueprint":{"trigger":"minecraft:inventory_changed","conditions":{"items":[{"items":["roboticarm:robotic_arm_blueprint"]}]}}},"requirements":[["has_blueprint"]],"rewards":{"recipes":["roboticarm:robotic_arm"]}}
